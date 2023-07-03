@@ -11,3 +11,4 @@ gazelle(
     name = "gazelle",
     gazelle = ":gazelle_rust_bin",
 )
+

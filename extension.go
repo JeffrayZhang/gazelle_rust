@@ -2,6 +2,7 @@ package ext
 
 import (
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"log"
 	"path"
@@ -15,7 +16,8 @@ import (
 	"github.com/bazelbuild/bazel-gazelle/rule"
 )
 
-type Extension struct {}
+type Extension struct{}
+
 // RegisterFlags registers command-line flags used by the extension. This
 // method is called once with the root configuration when Gazelle
 // starts. RegisterFlags may set an initial values in Config.Exts. When flags
@@ -63,7 +65,13 @@ func (e *Extension) Name() string {
 // returned, including an empty slice, the rule will be indexed.
 func (e *Extension) Imports(c *config.Config, r *rule.Rule, f *rule.File) []resolve.ImportSpec {
 	// TODO: Implement
-	return []resolve.ImportSpec{}
+	fmt.Printf("name: %v\n", r.AttrString("crate_name"))
+	return []resolve.ImportSpec{
+		{
+			Lang: "rust",
+			Imp:  r.AttrString("crate_name"),
+		},
+	}
 }
 
 // Embeds returns a list of labels of rules that the given rule embeds. If
@@ -114,6 +122,7 @@ var rustKinds = map[string]rule.KindInfo{
 			"deps":       true,
 			"srcs":       true,
 			"visibility": true,
+			"crate_name": true,
 		},
 		SubstituteAttrs: map[string]bool{},
 		MergeableAttrs: map[string]bool{
@@ -141,7 +150,6 @@ var rustKinds = map[string]rule.KindInfo{
 	},
 }
 
-
 // GenerateRules extracts build metadata from source files in a directory.
 // GenerateRules is called in each directory where an update is requested
 // in depth-first post-order.
@@ -158,7 +166,9 @@ var rustKinds = map[string]rule.KindInfo{
 func (e *Extension) GenerateRules(args language.GenerateArgs) language.GenerateResult {
 	result := language.GenerateResult{}
 	files, err := ioutil.ReadDir(args.Dir)
-	if err != nil { log.Fatal(err) }
+	if err != nil {
+		log.Fatal(err)
+	}
 	for _, file := range files {
 		if !strings.HasSuffix(file.Name(), ".rs") {
 			continue

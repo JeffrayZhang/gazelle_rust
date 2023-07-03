@@ -1,0 +1,13 @@
+load("@bazel_gazelle//:def.bzl", "gazelle", "gazelle_binary")
+
+gazelle_binary(
+    name = "gazelle_rust_bin",
+    languages = [
+        "//:gazelle_rust",
+    ],
+)
+
+gazelle(
+    name = "gazelle",
+    gazelle = ":gazelle_rust_bin",
+)

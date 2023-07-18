@@ -1,14 +1,26 @@
 load("@io_bazel_rules_go//go:def.bzl", "go_library")
 load("@bazel_gazelle//:def.bzl", "gazelle")
 
-# gazelle:prefix github.com/davidmcnamee/gazelle_rust
 gazelle(
     name = "gazelle",
 )
 
+gazelle(
+    name = "gazelle-update-repos",
+    args = [
+        "-from_file=go.mod",
+        "-to_macro=deps.bzl%go_dependencies",
+        "-prune",
+    ],
+    command = "update-repos",
+)
+
 go_library(
     name = "gazelle_rust",
-    srcs = ["extension.go"],
+    srcs = [
+        "extension.go",
+        "parser.go",
+    ],
     importpath = "github.com/davidmcnamee/gazelle_rust",
     visibility = ["//visibility:public"],
     deps = [
@@ -18,5 +30,9 @@ go_library(
         "@bazel_gazelle//repo:go_default_library",
         "@bazel_gazelle//resolve:go_default_library",
         "@bazel_gazelle//rule:go_default_library",
+        "@com_github_bazelbuild_buildtools//build:go_default_library",
+        "@com_github_deckarep_golang_set_v2//:golang-set",
+        "@com_github_smacker_go_tree_sitter//:go-tree-sitter",
+        "@com_github_smacker_go_tree_sitter//rust",
     ],
 )
